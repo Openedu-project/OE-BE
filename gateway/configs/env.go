@@ -9,15 +9,17 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type Config struct {
-	Port string `env:"PORT,required"`
-	// DBHost string `env:"DB_HOST,required"`
-	// DBUser string `env:"DB_USER,required"`
-	// DBPass string `env:"DB_PASS,required"`
-	// DBName string `env:"DB_NAME,required"`
+type Environment struct {
+	AppEnv string `env:"APP_ENV,required"`
+	Port   string `env:"PORT,required"`
+	DBHost string `env:"DB_HOST,required"`
+	DBUser string `env:"DB_USER,required"`
+	DBPass string `env:"DB_PASS,required"`
+	DBName string `env:"DB_NAME,required"`
+	DBPort string `env:"DB_PORT,required"`
 }
 
-var Env Config
+var Env Environment
 
 func InitEnv() {
 	_ = godotenv.Load()
@@ -25,6 +27,12 @@ func InitEnv() {
 		printEnvError(err)
 		log.Fatal("❌ Environment validation failed!")
 	}
+}
+
+func IsProduction() bool {
+	isProd := Env.AppEnv == "production"
+	fmt.Println("isProd: ", isProd)
+	return isProd
 }
 
 func printEnvError(err error) {
