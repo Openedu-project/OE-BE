@@ -8,6 +8,8 @@ import (
 
 func InitRouter() *gin.Engine {
 	r := gin.New()
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
 	r.GET("/api/v1/health", v1.HealthCheck)
 	return r
 }

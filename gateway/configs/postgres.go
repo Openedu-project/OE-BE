@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -41,17 +40,20 @@ func ConnectDatabase() {
 		PreferSimpleProtocol: true, // disables implicit prepared statement usage
 	}), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
-			SingularTable: false,                             // use singular table name, table for `User` would be `user` with this option enabled
-			NoLowerCase:   false,                             // skip the snake_casing of names
-			NameReplacer:  strings.NewReplacer("CID", "Cid"), // use name replacer to change struct/field name before convert it to DB name
+			SingularTable: false, // use singular table name, table for `User` would be `user` with this option enabled
+			NoLowerCase:   false, // skip the snake_casing of names
 		},
-		//Logger: logger.Default.LogMode(logger.Info),
 		Logger: newLogger,
 	})
 	if err != nil {
-		log.Fatalf(" Failed to connect PostgreSQL: %v", err)
+		log.Fatalf("Failed to connect PostgreSQL: %v", err)
 	}
-
+	sDB, err := db.DB()
+	if err != nil {
+		log.Fatalf("Failed to get sql.DB: %v", err)
+	}
+	sDB.SetMaxIdleConns(10)
+	sDB.SetMaxOpenConns(100)
 	DB = db
 	fmt.Println("✅ Database connected successfully!")
 }
