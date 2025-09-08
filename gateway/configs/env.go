@@ -10,13 +10,16 @@ import (
 )
 
 type Environment struct {
-	AppEnv string `env:"APP_ENV,required"`
-	Port   string `env:"PORT,required"`
-	DBHost string `env:"DB_HOST,required"`
-	DBUser string `env:"DB_USER,required"`
-	DBPass string `env:"DB_PASS,required"`
-	DBName string `env:"DB_NAME,required"`
-	DBPort string `env:"DB_PORT,required"`
+	AppEnv           string `env:"APP_ENV,required"`
+	Port             string `env:"PORT,required"`
+	DBHost           string `env:"DB_HOST,required"`
+	DBUser           string `env:"DB_USER,required"`
+	DBPass           string `env:"DB_PASS,required"`
+	DBName           string `env:"DB_NAME,required"`
+	DBPort           string `env:"DB_PORT,required"`
+	JwtSecretAccess  string `env:"JWT_SECRET_ACCESS,required"`
+	JwtSecretRefresh string `env:"JWT_SECRET_REFRESH,required"`
+	JwtExpiredTime   string `env:"JWT_EXPIRED_TIME,required"`
 }
 
 var Env Environment
