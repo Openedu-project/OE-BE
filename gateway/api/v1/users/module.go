@@ -6,15 +6,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Export instance
+var (
+	UserRepo *UserRepository
+	UserSvc  *UserService
+)
+
 func InitModule(r *gin.Engine) {
 	db := configs.DB
 	if configs.Env.AppEnv != "production" {
 		db.AutoMigrate(&User{})
 	}
 
-	repo := NewUserRepository(db)
-	service := NewUserService(repo)
-	controller := NewUserController(service)
+	UserRepo = NewUserRepository(db)
+	UserSvc = NewUserService(UserRepo)
+	controller := NewUserController(UserSvc)
 
 	api := r.Group("/api/v1")
 	controller.RegisterRoutes(api)
