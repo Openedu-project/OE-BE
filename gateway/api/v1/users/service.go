@@ -1,5 +1,7 @@
 package users
 
+import "gateway/utils"
+
 type UserService struct {
 	repo *UserRepository
 }
@@ -9,9 +11,14 @@ func NewUserService(repo *UserRepository) *UserService {
 }
 
 func (s *UserService) CreateUser(dto CreateUserDTO) (*User, error) {
+	hashedPassword, err := utils.HashPassword(dto.Password)
+	if err != nil {
+		return nil, err
+	}
 	user := User{
-		Name:  dto.Name,
-		Email: dto.Email,
+		Name:     dto.Name,
+		Email:    dto.Email,
+		Password: hashedPassword,
 	}
 	if err := s.repo.Create(&user); err != nil {
 		return nil, err
