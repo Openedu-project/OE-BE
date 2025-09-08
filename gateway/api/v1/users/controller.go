@@ -27,7 +27,7 @@ func (c *UserController) RegisterRoutes(r *gin.RouterGroup) {
 func (c *UserController) CreateUser(ctx *gin.Context) {
 	var dto CreateUserDTO
 	if err := ctx.ShouldBindJSON(&dto); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.Error(err)
 		return
 	}
 
