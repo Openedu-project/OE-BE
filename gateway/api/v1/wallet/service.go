@@ -1,8 +1,7 @@
 package wallets
 
 import (
-	"encoding/json"
-	"fmt"
+	"gateway/configs"
 	"gateway/utils"
 )
 
@@ -21,10 +20,10 @@ func (s *WalletService) CreateNearWallet(userId uint) (*Wallet, error) {
 	if err != nil {
 		return nil, err
 	}
-	key := "12345678901234567890123456789012" // 32 bytes
+	key := configs.Env.AESSecret
 	aes := utils.NewAES()
-	// encSeed, _ := aes.Encrypt(key, seedPhrase)
-	// encSecret, _ := aes.Encrypt(key, secret)
+	encSeed, _ := aes.Encrypt(key, seedPhrase)
+	encSecret, _ := aes.Encrypt(key, secret)
 
 	// TODO: seedPhrase, secret save to BD
 	account, err := utils.CreateImplicitAccount(seedPhrase, secret)
@@ -40,10 +39,10 @@ func (s *WalletService) CreateNearWallet(userId uint) (*Wallet, error) {
 		AccountID:         account.AccountID,
 		PublicKey:         account.PublicKey,
 		EncryptPrivateKey: encryptPrivateKey,
+		EncryptSeedPhase:  encSeed,
+		EncryptSecret:     encSecret,
 	}
 
-	b, _ := json.MarshalIndent(wallet, "", "  ")
-	fmt.Println(string(b))
 	if err := s.repo.Create(wallet); err != nil {
 		return nil, err
 	}

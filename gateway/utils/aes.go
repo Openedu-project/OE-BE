@@ -16,7 +16,6 @@ func NewAES() *AES {
 	return &AES{}
 }
 
-// EncryptAES mã hóa plaintext bằng AES-GCM, trả về base64 string
 func (*AES) Encrypt(key, plaintext string) (string, error) {
 	block, err := aes.NewCipher([]byte(key))
 	if err != nil {
@@ -28,23 +27,18 @@ func (*AES) Encrypt(key, plaintext string) (string, error) {
 		return "", fmt.Errorf("new gcm: %w", err)
 	}
 
-	// tạo nonce (IV) 12 byte ngẫu nhiên
 	nonce := make([]byte, aesgcm.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
 		return "", fmt.Errorf("generate nonce: %w", err)
 	}
 
-	// Seal = nonce + ciphertext + tag
 	ciphertext := aesgcm.Seal(nil, nonce, []byte(plaintext), nil)
 
-	// Gắn nonce trước ciphertext để dễ decode
 	final := append(nonce, ciphertext...)
 
-	// Encode base64 để lưu DB hoặc truyền network
 	return base64.StdEncoding.EncodeToString(final), nil
 }
 
-// DecryptAES giải mã base64 ciphertext bằng AES-GCM
 func (*AES) Decrypt(key, cipherTextBase64 string) (string, error) {
 	data, err := base64.StdEncoding.DecodeString(cipherTextBase64)
 	if err != nil {

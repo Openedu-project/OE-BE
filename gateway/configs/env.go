@@ -20,6 +20,7 @@ type Environment struct {
 	JwtSecretAccess  string `env:"JWT_SECRET_ACCESS,required"`
 	JwtSecretRefresh string `env:"JWT_SECRET_REFRESH,required"`
 	JwtExpiredTime   string `env:"JWT_EXPIRED_TIME,required"`
+	AESSecret        string `env:"AES_SECRET,required"`
 }
 
 var Env Environment
