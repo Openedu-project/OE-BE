@@ -2,6 +2,7 @@ package auth
 
 import (
 	"gateway/api/v1/users"
+	wallets "gateway/api/v1/wallet"
 	"net/http"
 	"time"
 
@@ -9,14 +10,16 @@ import (
 )
 
 type AuthController struct {
-	service     *AuthService
-	userService *users.UserService
+	service       *AuthService
+	userService   *users.UserService
+	walletService *wallets.WalletService
 }
 
-func NewAuthController(s *AuthService, u *users.UserService) *AuthController {
+func NewAuthController(s *AuthService, u *users.UserService, w *wallets.WalletService) *AuthController {
 	return &AuthController{
-		service:     s,
-		userService: u,
+		service:       s,
+		userService:   u,
+		walletService: w,
 	}
 }
 
@@ -41,9 +44,17 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		return
 	}
 
+	wallet, err := c.walletService.CreateNearWallet(user.ID)
+
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
+
 	ctx.JSON(http.StatusCreated, gin.H{
 		"message": "User registered successfully",
 		"user":    user,
+		"wallet":  wallet,
 	})
 }
 

@@ -16,6 +16,6 @@ func InitModule() {
 		db.AutoMigrate(&Wallet{})
 	}
 
-	WalletRepo := NewWalletRepository(db)
-	NewWalletService(WalletRepo)
+	WalletRepo = NewWalletRepository(db)
+	WalletSvc = NewWalletService(WalletRepo)
 }

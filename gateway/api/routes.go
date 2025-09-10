@@ -17,8 +17,9 @@ func InitRouter() *gin.Engine {
 	r.Use(middlewares.ExceptionMiddleware())
 	// r.Use(middlewares.ResponseFormatter())
 	r.GET("/api/v1/health", v1.HealthCheck)
+	wallets.InitModule()
 	users.InitModule(r)
 	auth.InitModule(r)
-	wallets.InitModule()
+
 	return r
 }

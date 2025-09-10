@@ -1,6 +1,8 @@
 package wallets
 
 import (
+	"encoding/json"
+	"fmt"
 	"gateway/utils"
 )
 
@@ -14,7 +16,7 @@ func NewWalletService(repo *WalletRepository) *WalletService {
 	}
 }
 
-func (s *WalletService) CreateNearWallet(userId int) (*Wallet, error) {
+func (s *WalletService) CreateNearWallet(userId uint) (*Wallet, error) {
 	seedPhrase, secret, err := utils.GenerateSeedPhraseAndSecret()
 	if err != nil {
 		return nil, err
@@ -40,6 +42,8 @@ func (s *WalletService) CreateNearWallet(userId int) (*Wallet, error) {
 		EncryptPrivateKey: encryptPrivateKey,
 	}
 
+	b, _ := json.MarshalIndent(wallet, "", "  ")
+	fmt.Println(string(b))
 	if err := s.repo.Create(wallet); err != nil {
 		return nil, err
 	}
