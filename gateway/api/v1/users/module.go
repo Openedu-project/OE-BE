@@ -2,6 +2,7 @@ package users
 
 import (
 	"gateway/configs"
+	"gateway/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +16,7 @@ var (
 func InitModule(r *gin.Engine) {
 	db := configs.DB
 	if configs.Env.AppEnv != "production" {
-		db.AutoMigrate(&User{})
+		db.AutoMigrate(&models.User{})
 	}
 
 	UserRepo = NewUserRepository(db)
