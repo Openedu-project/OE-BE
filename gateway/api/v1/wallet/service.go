@@ -2,6 +2,7 @@ package wallets
 
 import (
 	"gateway/configs"
+	"gateway/models"
 	"gateway/utils"
 )
 
@@ -15,7 +16,7 @@ func NewWalletService(repo *WalletRepository) *WalletService {
 	}
 }
 
-func (s *WalletService) CreateNearWallet(userId uint) (*Wallet, error) {
+func (s *WalletService) CreateNearWallet(userId uint) (*models.Wallet, error) {
 	seedPhrase, secret, err := utils.GenerateSeedPhraseAndSecret()
 	if err != nil {
 		return nil, err
@@ -34,7 +35,7 @@ func (s *WalletService) CreateNearWallet(userId uint) (*Wallet, error) {
 
 	encryptPrivateKey, _ := aes.Encrypt(key, account.PrivateKey)
 
-	wallet := &Wallet{
+	wallet := &models.Wallet{
 		UserID:            uint(userId),
 		AccountID:         account.AccountID,
 		PublicKey:         account.PublicKey,

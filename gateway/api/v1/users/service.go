@@ -2,6 +2,7 @@ package users
 
 import (
 	"fmt"
+	"gateway/models"
 	"gateway/utils"
 )
 
@@ -13,12 +14,12 @@ func NewUserService(repo *UserRepository) *UserService {
 	return &UserService{repo: repo}
 }
 
-func (s *UserService) CreateUser(dto CreateUserDTO) (*User, error) {
+func (s *UserService) CreateUser(dto CreateUserDTO) (*models.User, error) {
 	hashedPassword, err := utils.HashPassword(dto.Password)
 	if err != nil {
 		return nil, err
 	}
-	user := User{
+	user := models.User{
 		Name:     dto.Name,
 		Email:    dto.Email,
 		Password: hashedPassword,
@@ -29,11 +30,11 @@ func (s *UserService) CreateUser(dto CreateUserDTO) (*User, error) {
 	return &user, nil
 }
 
-func (s *UserService) GetUsers() ([]User, error) {
+func (s *UserService) GetUsers() ([]models.User, error) {
 	return s.repo.FindAll()
 }
 
-func (s *UserService) ValidateUser(email, password string) (*User, error) {
+func (s *UserService) ValidateUser(email, password string) (*models.User, error) {
 	user, err := s.repo.FindByEmail(email)
 	if err != nil {
 		return nil, err

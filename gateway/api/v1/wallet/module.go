@@ -2,6 +2,7 @@ package wallets
 
 import (
 	"gateway/configs"
+	"gateway/models"
 )
 
 // Export instance
@@ -13,7 +14,7 @@ var (
 func InitModule() {
 	db := configs.DB
 	if configs.Env.AppEnv != "production" {
-		db.AutoMigrate(&Wallet{})
+		db.AutoMigrate(&models.Wallet{})
 	}
 
 	WalletRepo = NewWalletRepository(db)
