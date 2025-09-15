@@ -3,6 +3,7 @@ package courses
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"gateway/models"
 
 	"gorm.io/datatypes"
@@ -62,6 +63,26 @@ func (s *CourseService) UpdateCourseInfo(courseId uint, data map[string]interfac
 	}
 	if v, ok := data["level"].(string); ok && v != "" {
 		course.Level = v
+	}
+
+	if err := s.repo.db.Save(&course).Error; err != nil {
+		return nil, err
+	}
+
+	return &course, nil
+}
+
+func (s *CourseService) TogglePublishCourse(courseId uint, isPublish bool) (*models.Course, error) {
+	var course models.Course
+	if err := s.repo.db.First(&course, courseId).Error; err != nil {
+		return nil, err
+	}
+
+	fmt.Println("isPublish", isPublish)
+	if isPublish {
+		course.Status = "publish"
+	} else {
+		course.Status = "draft"
 	}
 
 	if err := s.repo.db.Save(&course).Error; err != nil {

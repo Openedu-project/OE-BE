@@ -27,6 +27,7 @@ func (c *CourseController) RegisterRoutes(r *gin.RouterGroup) {
 	{
 		courseRoutes.POST("/", middlewares.RequirePermission(guards.PermCourseCRUD), c.CreateCourse)
 		courseRoutes.PUT("/:id", middlewares.RequirePermission(guards.PermCourseCRUD), c.UpdateCourseInfo)
+		courseRoutes.PUT("/:id/publish", middlewares.RequirePermission(guards.PermCourseCRUD), c.PublishCourse)
 	}
 }
 
@@ -105,4 +106,30 @@ func (c *CourseController) UpdateCourseInfo(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, updatedCourse)
+}
+
+func (c *CourseController) PublishCourse(ctx *gin.Context) {
+	courseIdStr := ctx.Param("id")
+	courseId, err := strconv.Atoi(courseIdStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid course id"})
+		return
+	}
+	var body PublishCourseDTO
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	course, err := c.service.TogglePublishCourse(uint(courseId), body.IsPublish)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Course status updated successfully",
+		"data":    course,
+	})
 }
