@@ -22,10 +22,30 @@ func (s *CourseService) CreateCourse(dto CreateCourseDTO, userId uint) (*models.
 		Name:             dto.Name,
 		ShortDescription: dto.ShortDescription,
 		LecturerId:       userId,
+		Status:           "draft", // default
 	}
 	if err := s.repo.Create(course); err != nil {
 		return nil, err
 	}
+
+	initSection := &models.CourseSection{
+		CourseID: course.ID,
+		Name:     "Create your first section",
+		Status:   "draft",
+	}
+	if err := s.repo.db.Create(initSection).Error; err != nil {
+		return nil, err
+	}
+
+	initLesson := &models.CourseLesson{
+		SectionID: initSection.ID,
+		Name:      "Create your first lesson",
+		Status:    "draft",
+	}
+	if err := s.repo.db.Create(initLesson).Error; err != nil {
+		return nil, err
+	}
+
 	return course, nil
 }
 

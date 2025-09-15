@@ -17,7 +17,7 @@ import (
 func InitModule(r *gin.Engine) {
 	db := configs.DB
 	if configs.Env.AppEnv != "production" {
-		db.AutoMigrate(&models.Course{})
+		db.AutoMigrate(&models.Course{}, &models.CourseCategory{}, &models.CourseSection{}, &models.CourseLesson{})
 	}
 
 	CourseRepo := NewCourseRepository(db)
