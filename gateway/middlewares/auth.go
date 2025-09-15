@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"gateway/configs"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -31,7 +32,19 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			c.Set("user_id", claims["user_id"])
+			var userId uint
+			switch v := claims["user_id"].(type) {
+			case float64:
+				userId = uint(v)
+			case string:
+				if id, err := strconv.ParseUint(v, 10, 32); err == nil {
+					userId = uint(id)
+				}
+			case int:
+				userId = uint(v)
+			}
+
+			c.Set("userId", userId)
 			c.Set("email", claims["email"])
 			c.Set("name", claims["name"])
 		}
