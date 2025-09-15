@@ -1,9 +1,12 @@
 package courses
 
 import (
+	"fmt"
 	"gateway/guards"
 	"gateway/middlewares"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,6 +26,7 @@ func (c *CourseController) RegisterRoutes(r *gin.RouterGroup) {
 	courseRoutes.Use(middlewares.AuthMiddleware())
 	{
 		courseRoutes.POST("/", middlewares.RequirePermission(guards.PermCourseCRUD), c.CreateCourse)
+		courseRoutes.PUT("/:id", middlewares.RequirePermission(guards.PermCourseCRUD), c.UpdateCourseInfo)
 	}
 }
 
@@ -48,4 +52,57 @@ func (c *CourseController) CreateCourse(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, course)
+}
+
+func (c *CourseController) UpdateCourseInfo(ctx *gin.Context) {
+	courseIdStr := ctx.Param("id")
+	courseId, err := strconv.Atoi(courseIdStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid course id"})
+		return
+	}
+
+	userIdValue, _ := ctx.Get("userId")
+	// roleValue, _ := ctx.Get("role")
+	userId := userIdValue.(uint)
+	// role := roleValue.(string)
+
+	category := ctx.PostForm("category")
+	level := ctx.PostForm("level")
+
+	var bannerPath string
+	bannerFile, err := ctx.FormFile("banner")
+	if err == nil {
+		bannerPath = fmt.Sprintf("uploads/banner/%d_%s", time.Now().Unix(), bannerFile.Filename)
+		if err := ctx.SaveUploadedFile(bannerFile, bannerPath); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save banner"})
+			return
+		}
+	}
+
+	var videoPath string
+	videoFile, err := ctx.FormFile("video_preview")
+	if err == nil {
+		videoPath = fmt.Sprintf("uploads/videos/%d_%s", time.Now().Unix(), videoFile.Filename)
+		if err := ctx.SaveUploadedFile(videoFile, videoPath); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save video preview"})
+			return
+		}
+	}
+
+	updateData := map[string]interface{}{
+		"banner":        bannerPath,
+		"video_preview": videoPath,
+		"category":      category,
+		"level":         level,
+	}
+
+	//TODO: update role
+	updatedCourse, err := c.service.UpdateCourseInfo(uint(courseId), updateData, userId, "admin")
+	if err != nil {
+		ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, updatedCourse)
 }
