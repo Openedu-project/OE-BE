@@ -28,11 +28,20 @@ func (c *CourseController) RegisterRoutes(r *gin.RouterGroup) {
 
 func (c *CourseController) CreateCourse(ctx *gin.Context) {
 	var dto CreateCourseDTO
+	userIdValue, _ := ctx.Get("userId")
+
+	userId, ok := userIdValue.(uint)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid userId type"})
+		return
+	}
+
 	if err := ctx.ShouldBindJSON(&dto); err != nil {
 		ctx.Error(err)
 		return
 	}
-	course, err := c.service.CreateCourse(dto)
+
+	course, err := c.service.CreateCourse(dto, userId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
