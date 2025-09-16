@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gateway/guards"
 	"gateway/middlewares"
+	"gateway/utils"
 	"net/http"
 	"strconv"
 	"time"
@@ -42,13 +43,13 @@ func (c *CourseController) CreateCourse(ctx *gin.Context) {
 	}
 
 	if err := ctx.ShouldBindJSON(&dto); err != nil {
-		ctx.Error(err)
+		ctx.Error(&utils.AppError{Status: http.StatusBadRequest, Message: err.Error()})
 		return
 	}
 
 	course, err := c.service.CreateCourse(dto, userId)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.Error(&utils.AppError{Status: http.StatusInternalServerError, Message: "Course creation failed"})
 		return
 	}
 
