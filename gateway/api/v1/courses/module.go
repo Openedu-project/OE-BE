@@ -2,6 +2,7 @@ package courses
 
 import (
 	coursesCategory "gateway/api/v1/courses/categories"
+	coursesSection "gateway/api/v1/courses/sections"
 	"gateway/configs"
 	"gateway/models"
 
@@ -31,4 +32,9 @@ func InitModule(r *gin.Engine) {
 	CourseCategorySvc := coursesCategory.NewCourseCategoryService(CourseCategoryRepo)
 	courseCategoryController := coursesCategory.NewCourseCategoryController(CourseCategorySvc)
 	courseCategoryController.RegisterRoutes(api)
+
+	CourseSectionRepo := coursesSection.NewCourseSectionRepository(db)
+	CourseSectionSvc := coursesSection.NewCourseSectionService(CourseSectionRepo)
+	courseSectionController := coursesSection.NewCourseSectionController(CourseSectionSvc)
+	courseSectionController.RegisterRoutes(api)
 }
