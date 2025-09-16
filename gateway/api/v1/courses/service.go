@@ -38,9 +38,9 @@ func (s *CourseService) CreateCourse(dto CreateCourseDTO, userId uint) (*models.
 	}
 
 	initLesson := &models.CourseLesson{
-		SectionID: initSection.ID,
-		Name:      "Create your first lesson",
-		Status:    "draft",
+		CourseSectionID: initSection.ID,
+		Name:            "Create your first lesson",
+		Status:          "draft",
 	}
 	if err := s.repo.db.Create(initLesson).Error; err != nil {
 		return nil, err
