@@ -22,7 +22,7 @@ func NewLaunchpadController(s *LaunchpadService) *LaunchpadController {
 func (c *LaunchpadController) RegisterRoutes(r *gin.RouterGroup) {
 	lpRoutes := r.Group("/launchpads")
 	{
-		lpRoutes.GET("/", c.GetLaunchpads)
+		lpRoutes.GET("/", c.GetAllLaunchpadHome)
 		lpRoutes.GET("/:id", c.GetLaunchpadByID)
 	}
 
@@ -84,17 +84,28 @@ func (c *LaunchpadController) GetLaunchpadByID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, launchpad)
 }
 
-func (c *LaunchpadController) GetLaunchpads(ctx *gin.Context) {
-	launchpads, err := c.service.GetLaunchpads()
+func (c *LaunchpadController) GetAllLaunchpadHome(ctx *gin.Context) {
+	groups, err := c.service.GetAllLaunchpadHome()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-
-	ctx.JSON(http.StatusOK, launchpads)
+	ctx.JSON(http.StatusOK, groups)
 }
+
+// func (c *LaunchpadController) GetLaunchpads(ctx *gin.Context) {
+// 	launchpads, err := c.service.GetLaunchpads()
+// 	if err != nil {
+// 		ctx.JSON(http.StatusInternalServerError, gin.H{
+// 			"error": err.Error(),
+// 		})
+// 		return
+// 	}
+
+// 	ctx.JSON(http.StatusOK, launchpads)
+// }
 
 func (c *LaunchpadController) ApproveLaunchpad(ctx *gin.Context) {
 	idStr := ctx.Param("id")

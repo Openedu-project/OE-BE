@@ -42,24 +42,10 @@ func (r *LaunchpadRepository) Update(lp *models.Launchpad) error {
 	return r.db.Save(lp).Error
 }
 
-func (r *LaunchpadRepository) FindAllByStatus(status models.LaunchpadStatus) ([]models.Launchpad, error) {
-	var list []models.Launchpad
-	err := r.db.Preload("Course").Preload("VotingPlans", func(db *gorm.DB) *gorm.DB {
-		return db.Order("step asc")
-	}).Where("status = ? AND approved = ?", status, true).Find(&list).Error
-
-	return list, err
-}
-
-func (r *LaunchpadRepository) FindAll(approvedOnly bool) ([]models.Launchpad, error) {
+func (r *LaunchpadRepository) FindAllLaunchpadHome() ([]models.Launchpad, error) {
 	var launchpads []models.Launchpad
-	query := r.db.Preload("Course")
-
-	if approvedOnly {
-		query = query.Where("approved = ?", true)
-	}
-
-	err := query.Order("created_at desc").Find(&launchpads).Error
+	err := r.db.Preload("Course").Where("approved = ?", true).Order(`
+  created_at DESC`).Find(&launchpads).Error
 
 	return launchpads, err
 }
