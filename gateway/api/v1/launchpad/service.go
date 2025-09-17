@@ -75,9 +75,27 @@ func (s *LaunchpadService) GetLaunchpadByID(id uint) (*models.Launchpad, error) 
 	return s.repo.FindByID(id)
 }
 
-func (s *LaunchpadService) GetLaunchpads() ([]models.Launchpad, error) {
-	return s.repo.FindAll(true)
+func (s *LaunchpadService) GetAllLaunchpadHome() (map[string][]models.Launchpad, error) {
+	launchpads, err := s.repo.FindAllLaunchpadHome()
+	if err != nil {
+		return nil, err
+	}
+
+	groups := map[string][]models.Launchpad{
+		"featuring": {},
+		"upcoming":  {},
+		"success":   {},
+	}
+
+	for _, lp := range launchpads {
+		groups[string(lp.Status)] = append(groups[string(lp.Status)], lp)
+	}
+	return groups, nil
 }
+
+// func (s *LaunchpadService) GetLaunchpads() ([]models.Launchpad, error) {
+// 	return s.repo.FindAll(true)
+// }
 
 func (s *LaunchpadService) ApproveLaunchpad(id uint) (*models.Launchpad, error) {
 	// Find the launchpad first
