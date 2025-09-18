@@ -2,6 +2,7 @@ package newsfeed
 
 import (
 	"net/http"
+	"strconv"
 
 	"gateway/guards"
 	"gateway/middlewares"
@@ -32,6 +33,8 @@ func (c *BlogController) RegisterRoutes(r *gin.RouterGroup) {
 		blogRoutesAuth.POST("/", middlewares.RequirePermission(guards.Blog.Create), c.CreateBlog)
 		// blogRoutesAuth.PUT("/:id", middlewares.RequirePermission(guards.Blog.Update), c.UpdateBlog)
 		// blogRoutesAuth.DELETE("/:id", middlewares.RequirePermission(guards.Blog.Delete), c.DeleteBlog)
+		blogRoutesAuth.POST("/:id/publish", middlewares.RequirePermission(guards.Blog.Update), c.RequestPublishBlog)
+		blogRoutesAuth.POST("/:id/approve", middlewares.RequirePermission(guards.Blog.Update), c.ApproveBlog)
 	}
 }
 
@@ -71,4 +74,78 @@ func (c *BlogController) CreateBlog(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, blog)
+}
+
+func (c *BlogController) RequestPublishBlog(ctx *gin.Context) {
+	blogIDStr := ctx.Param("id")
+	blogID, err := strconv.ParseUint(blogIDStr, 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid blog ID",
+		})
+		return
+	}
+
+	role := ctx.GetString("role")
+
+	blog, err := c.service.RequestPublish(ctx, uint(blogID), role)
+	if err != nil {
+		ctx.JSON(http.StatusForbidden, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, RequestPublishBlogResponse{
+		Message: "Blog submitted for approval",
+		Blog:    blog,
+	})
+}
+
+func (c *BlogController) ApproveBlog(ctx *gin.Context) {
+	blogIDStr := ctx.Param("id")
+	blogID, err := strconv.ParseUint(blogIDStr, 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid blog ID",
+		})
+		return
+	}
+
+	userIdValue, exists := ctx.Get("userId")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "User not found in context",
+		})
+		return
+	}
+
+	adminId, ok := userIdValue.(uint)
+	if !ok {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid user id type",
+		})
+		return
+	}
+
+	var req ApproveBlogRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	blog, err := c.service.ApproveBlog(ctx, uint(blogID), adminId, req)
+	if err != nil {
+		ctx.JSON(http.StatusForbidden, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, ApproveBlogResponse{
+		Message: "Blog approval processed",
+		Blog:    blog,
+	})
 }
