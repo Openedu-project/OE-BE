@@ -9,6 +9,25 @@ const (
 	RoleLearner  Role = "learner"
 )
 
+const (
+	BlogCreate Permission = "blog:create"
+	BlogRead   Permission = "blog:read"
+	BlogUpdate Permission = "blog:update"
+	BlogDelete Permission = "blog:delete"
+)
+
+var Blog = struct {
+	Create Permission
+	Read   Permission
+	Update Permission
+	Delete Permission
+}{
+	Create: BlogCreate,
+	Read:   BlogRead,
+	Update: BlogUpdate,
+	Delete: BlogDelete,
+}
+
 type Permission string
 
 const (
@@ -39,6 +58,10 @@ var rolePermissions = map[Role][]Permission{
 		PermContentView,
 		PermReportView,
 		PermSystemConfig,
+		BlogCreate,
+		BlogRead,
+		BlogUpdate,
+		BlogDelete,
 	},
 	RoleAdmin: {
 		PermUserManage,
@@ -47,6 +70,10 @@ var rolePermissions = map[Role][]Permission{
 		PermContentCRUD,
 		PermContentView,
 		PermReportView,
+		BlogCreate,
+		BlogRead,
+		BlogUpdate,
+		BlogDelete,
 	},
 	RoleCreator: {
 		PermCourseCRUD,
@@ -54,11 +81,14 @@ var rolePermissions = map[Role][]Permission{
 		PermContentCRUD,
 		PermContentView,
 		PermReportView,
+		BlogCreate,
+		BlogRead,
 	},
 	RoleLearner: {
 		PermCourseView,
 		PermContentView,
 		PermReportView,
+		BlogRead,
 	},
 }
 
