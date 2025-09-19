@@ -2,9 +2,10 @@ package auth
 
 import (
 	"fmt"
-	"gateway/configs"
 	"strconv"
 	"time"
+
+	"gateway/configs"
 
 	"github.com/golang-jwt/jwt/v5"
 )

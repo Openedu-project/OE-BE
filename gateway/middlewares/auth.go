@@ -1,8 +1,9 @@
 package middlewares
 
 import (
-	"gateway/configs"
 	"strconv"
+
+	"gateway/configs"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -10,7 +11,6 @@ import (
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		tokenString, err := c.Cookie("jwt")
 		if err != nil {
 			c.Error(err)
@@ -19,7 +19,6 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
-
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, jwt.ErrSignatureInvalid
 			}
