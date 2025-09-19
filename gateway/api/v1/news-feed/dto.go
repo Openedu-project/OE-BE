@@ -1,7 +1,7 @@
 package newsfeed
 
 type CreateBlogsRequest struct {
-	Title       string `json:"title" bidning:"required"`
+	Title       string `json:"title" binding:"required"`
 	Description string `json:"description"`
 	Content     string `json:"content" binding:"required"`
 	Thumbnail   string `json:"thumbnail"`

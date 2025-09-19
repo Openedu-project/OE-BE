@@ -38,17 +38,19 @@ func (s *BlogService) CreateBlog(ctx context.Context, req CreateBlogsRequest, au
 	return blog, nil
 }
 
-func (s *BlogService) RequestPublish(ctx context.Context, blogID uint, role string) (*models.Blog, error) {
+func (s *BlogService) RequestPublish(ctx context.Context, blogID uint, userID uint) (*models.Blog, error) {
 	blog, err := s.repo.GetByID(ctx, blogID)
 	if err != nil {
 		return nil, errors.New("Blog not found")
 	}
 
-	if role != "creator" && role != "admin" {
-		return nil, errors.New("Permission denied")
+	// Creator chỉ được publish blog của chính họ
+	if blog.AuthorID != userID {
+		return nil, errors.New("Permission denied: cannot publish others' blog")
 	}
 
-	if blog.Status == "draft" {
+	// Status logic
+	if blog.Status == "draft" || blog.Status == "" {
 		blog.Status = "pending"
 		blog.UpdatedAt = time.Now()
 	} else if blog.Status == "pending" {
@@ -64,7 +66,6 @@ func (s *BlogService) RequestPublish(ctx context.Context, blogID uint, role stri
 	return blog, nil
 }
 
-// Approve/Reject
 func (s *BlogService) ApproveBlog(ctx context.Context, blogID uint, adminID uint, req ApproveBlogRequest) (*models.Blog, error) {
 	blog, err := s.repo.GetByID(ctx, blogID)
 	if err != nil {
@@ -85,6 +86,7 @@ func (s *BlogService) ApproveBlog(ctx context.Context, blogID uint, adminID uint
 	if err := s.repo.Update(ctx, blog); err != nil {
 		return nil, err
 	}
+
 	return blog, nil
 }
 
