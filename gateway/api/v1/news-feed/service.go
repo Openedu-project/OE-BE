@@ -100,3 +100,11 @@ func generateSlug(title string) string {
 
 	return slug
 }
+
+func (s *BlogService) ListBlogs(ctx context.Context, filters map[string]interface{}, search string, limit, offset int) ([]models.Blog, int64, error) {
+	return s.repo.List(ctx, filters, search, limit, offset)
+}
+
+func (s *BlogService) GetBlogDetail(ctx context.Context, id uint) (*models.Blog, error) {
+	return s.repo.GetDetail(ctx, id)
+}
