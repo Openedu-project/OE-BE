@@ -22,19 +22,36 @@ func (c *BlogController) RegisterRoutes(r *gin.RouterGroup) {
 	// public routes
 	blogRoutes := r.Group("/blogs")
 	{
-		blogRoutes.GET("/", c.ListBlogs)        // c.GetAllBlogs
-		blogRoutes.GET("/:id", c.GetBlogDetail) // c.GetBlogByID
+		blogRoutes.GET("/", c.ListBlogs)        // list published blogs
+		blogRoutes.GET("/:id", c.GetBlogDetail) // blog detail (published)
 	}
 
-	// Auth routes
+	// Auth routes (must be behind AuthMiddleware)
 	blogRoutesAuth := r.Group("/blogs")
 	blogRoutesAuth.Use(middlewares.AuthMiddleware())
 	{
 		blogRoutesAuth.POST("/", middlewares.RequirePermission(guards.BlogCreate), c.CreateBlog)
-		// blogRoutesAuth.PUT("/:id", middlewares.RequirePermission(guards.Blog.Update), c.UpdateBlog)
-		// blogRoutesAuth.DELETE("/:id", middlewares.RequirePermission(guards.Blog.Delete), c.DeleteBlog)
+		blogRoutesAuth.PUT("/:id", middlewares.RequirePermission(guards.BlogUpdate), c.UpdateBlog)
+		blogRoutesAuth.DELETE("/:id", middlewares.RequirePermission(guards.BlogDelete), c.DeleteBlog)
 		blogRoutesAuth.POST("/:id/publish", middlewares.RequirePermission(guards.BlogPublish), c.RequestPublishBlog)
 		blogRoutesAuth.POST("/:id/approve", middlewares.RequirePermission(guards.BlogPublish), c.ApproveBlog)
+
+		// My blogs
+		blogRoutesAuth.GET("/my", c.MyBlogs)
+	}
+
+	// Category management (admin only) - require PermUserManage (admin/sysadmin)
+	catGroup := blogRoutesAuth.Group("/categories")
+	{
+		catGroup.POST("/", middlewares.RequirePermission(guards.PermUserManage), c.CreateCategory)
+		catGroup.PUT("/:id", middlewares.RequirePermission(guards.PermUserManage), c.UpdateCategory)
+		catGroup.DELETE("/:id", middlewares.RequirePermission(guards.PermUserManage), c.DeleteCategory)
+	}
+
+	// Public categories list
+	catPublic := r.Group("/categories")
+	{
+		catPublic.GET("/", c.ListCategory)
 	}
 }
 
@@ -127,6 +144,75 @@ func (c *BlogController) ApproveBlog(ctx *gin.Context) {
 	})
 }
 
+func (c *BlogController) MyBlogs(ctx *gin.Context) {
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
+	userIdValue, _ := ctx.Get("userId")
+	authorID := userIdValue.(uint)
+
+	blogs, total, err := c.service.MyBlogs(ctx, authorID, limit, offset)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"total": total,
+		"blogs": blogs,
+	})
+}
+
+// Optional public/my route wrapper
+func (c *BlogController) MyBlogsPublic(ctx *gin.Context) {
+	c.MyBlogs(ctx)
+}
+
+// Update Blog
+func (c *BlogController) UpdateBlog(ctx *gin.Context) {
+	blogID, _ := strconv.ParseUint(ctx.Param("id"), 10, 32)
+	userIdValue, _ := ctx.Get("userId")
+	userID := userIdValue.(uint)
+
+	var req UpdateBlogRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	blog, err := c.service.UpdateBlog(ctx, uint(blogID), userID, req)
+	if err != nil {
+		ctx.JSON(http.StatusForbidden, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Blog updated successfully",
+		"blog":    blog,
+	})
+}
+
+// Delete blog
+func (c *BlogController) DeleteBlog(ctx *gin.Context) {
+	blogID, _ := strconv.ParseUint(ctx.Param("id"), 10, 32)
+	userIdValue, _ := ctx.Get("userId")
+	authorID := userIdValue.(uint)
+
+	if err := c.service.DeleteBlog(ctx, uint(blogID), authorID); err != nil {
+		ctx.JSON(http.StatusForbidden, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, DeleteBlogResponse{Message: "Blog deleted"})
+}
+
 func (c *BlogController) ListBlogs(ctx *gin.Context) {
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
 	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
@@ -169,4 +255,88 @@ func (c *BlogController) GetBlogDetail(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, blog)
+}
+
+// Categories
+func (c *BlogController) CreateCategory(ctx *gin.Context) {
+	var req CreateCategoryRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	cat, err := c.service.CreateCategory(ctx, req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, CategoryResponse{
+		ID:          cat.ID,
+		Name:        cat.Name,
+		Description: cat.Slug,
+	})
+}
+
+func (c *BlogController) UpdateCategory(ctx *gin.Context) {
+	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 32)
+	var req UpdateCategoryRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	cat, err := c.service.UpdateCategory(ctx, uint(id), req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, CategoryResponse{
+		ID:          cat.ID,
+		Name:        cat.Name,
+		Description: cat.Slug,
+	})
+}
+
+func (c *BlogController) DeleteCategory(ctx *gin.Context) {
+	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 32)
+	if err := c.service.DeleteCategory(ctx, uint(id)); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, DeleteBlogResponse{
+		Message: "Category deleted",
+	})
+}
+
+func (c *BlogController) ListCategory(ctx *gin.Context) {
+	cats, err := c.service.ListCategory(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	resp := make([]CategoryResponse, 0, len(cats))
+	for _, cmodel := range cats {
+		resp = append(resp, CategoryResponse{
+			ID:          cmodel.ID,
+			Name:        cmodel.Name,
+			Description: cmodel.Slug,
+		})
+	}
+	ctx.JSON(http.StatusOK, resp)
 }

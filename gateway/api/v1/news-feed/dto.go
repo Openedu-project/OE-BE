@@ -23,3 +23,32 @@ type ApproveBlogResponse struct {
 	Message string      `json:"message"`
 	Blog    interface{} `json:"blog"`
 }
+
+type UpdateBlogRequest struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Content     string `json:"content"`
+	Thumbnail   string `json:"thumbnail"`
+	CategoryID  uint   `json:"category_id"`
+	Language    string `json:"language"`
+}
+
+type DeleteBlogResponse struct {
+	Message string `json:"message"`
+}
+
+type CreateCategoryRequest struct {
+	Name        string `json:"name" binding:"required"`
+	Description string `json:"description"`
+}
+
+type UpdateCategoryRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+type CategoryResponse struct {
+	ID          uint   `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
