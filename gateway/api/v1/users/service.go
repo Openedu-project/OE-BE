@@ -2,6 +2,7 @@ package users
 
 import (
 	"fmt"
+
 	"gateway/models"
 	"gateway/utils"
 )
@@ -23,6 +24,7 @@ func (s *UserService) CreateUser(dto CreateUserDTO) (*models.User, error) {
 		Name:     dto.Name,
 		Email:    dto.Email,
 		Password: hashedPassword,
+		Role:     "learner",
 	}
 	if err := s.repo.Create(&user); err != nil {
 		return nil, err
@@ -45,6 +47,20 @@ func (s *UserService) ValidateUser(email, password string) (*models.User, error)
 
 	if !utils.CheckPasswordHash(password, user.Password) {
 		return nil, fmt.Errorf("invalid credentials")
+	}
+
+	return user, nil
+}
+
+func (s *UserService) UpdateRole(id uint, role string) (*models.User, error) {
+	user, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Role = role
+	if err := s.repo.db.Save(user).Error; err != nil {
+		return nil, err
 	}
 
 	return user, nil

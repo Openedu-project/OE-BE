@@ -1,10 +1,11 @@
 package auth
 
 import (
-	"gateway/api/v1/users"
-	wallets "gateway/api/v1/wallets"
 	"net/http"
 	"time"
+
+	"gateway/api/v1/users"
+	wallets "gateway/api/v1/wallets"
 
 	"github.com/gin-gonic/gin"
 )
@@ -45,7 +46,6 @@ func (c *AuthController) Register(ctx *gin.Context) {
 	}
 
 	wallet, err := c.walletService.CreateNearWallet(user.ID)
-
 	if err != nil {
 		ctx.Error(err)
 		return
@@ -76,6 +76,7 @@ func (c *AuthController) Login(ctx *gin.Context) {
 		UserID: user.ID,
 		Name:   user.Name,
 		Email:  user.Email,
+		Role:   user.Role,
 	})
 	if err != nil {
 		ctx.Error(err)
