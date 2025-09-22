@@ -12,7 +12,8 @@ func InitModule(r *gin.Engine) {
 	}
 
 	repo := NewBlogRepository(db)
-	scv := NewBlogService(repo)
+	catRepo := NewCategoryRepository(db)
+	scv := NewBlogService(repo, catRepo)
 	controller := NewBlogController(scv)
 
 	api := r.Group("/api/v1")
