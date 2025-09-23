@@ -6,18 +6,18 @@ import (
 	"os/signal"
 
 	"communication-service/configs"
-	"communication-service/handlers"
 )
 
 func init() {
+	// Load config, DB, RabbitMQ trước khi main chạy
 	configs.InitEnv()
+	configs.ConnectDatabase()
 }
 
 func main() {
-	log.Println("✅ Communication service started...")
+	// Start listener nhận message từ RabbitMQ
 
-	// Listener RabbitMQ (sẽ implement ở issue #47)
-	go handlers.ListenRegisterUserSuccess()
+	log.Println("✅ Communication service started...")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)

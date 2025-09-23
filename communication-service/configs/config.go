@@ -7,7 +7,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type Config struct {
+type EnvConfig struct {
 	AppEnv      string
 	Port        string
 	SMTPHost    string
@@ -17,22 +17,21 @@ type Config struct {
 	RabbitMQURL string
 }
 
-var Env *Config
+var Env EnvConfig
 
 func InitEnv() {
-	if err := godotenv.Load(".env"); err != nil {
-		log.Println("No .env file found, using system env")
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Println("⚠️ No .env file found, using environment variables")
 	}
 
-	Env = &Config{
-		AppEnv:      os.Getenv("APP_ENV"),
-		Port:        os.Getenv("PORT"),
-		SMTPHost:    os.Getenv("SMTP_HOST"),
-		SMTPPort:    os.Getenv("SMTP_PORT"),
-		SMTPUser:    os.Getenv("SMTP_USER"),
-		SMTPPass:    os.Getenv("SMTP_PASS"),
-		RabbitMQURL: os.Getenv("RABBITMQ_URL"),
-	}
+	Env.AppEnv = os.Getenv("APP_ENV")
+	Env.Port = os.Getenv("PORT")
+	Env.SMTPHost = os.Getenv("SMTP_HOST")
+	Env.SMTPPort = os.Getenv("SMTP_PORT")
+	Env.SMTPUser = os.Getenv("SMTP_USER")
+	Env.SMTPPass = os.Getenv("SMTP_PASS")
+	Env.RabbitMQURL = os.Getenv("RABBITMQ_URL")
 
-	log.Printf("✅ Environment loaded: %s", Env.AppEnv)
+	log.Println("✅ Environment loaded")
 }
