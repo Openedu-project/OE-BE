@@ -2,13 +2,26 @@ package main
 
 import (
 	"log"
+	"os"
+	"os/signal"
 
-	"communication-service/config"
+	"communication-service/configs"
+	"communication-service/handlers"
 )
 
-func main() {
-	config.LoadConfig()
-	log.Printf("Communication Service started in %s environment on port %s", config.Cfg.AppEnv, config.Cfg.Port)
+func init() {
+	configs.InitEnv()
+}
 
-	select {}
+func main() {
+	log.Println("✅ Communication service started...")
+
+	// Listener RabbitMQ (sẽ implement ở issue #47)
+	go handlers.ListenRegisterUserSuccess()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+
+	log.Println("Shutting down communication service...")
 }
