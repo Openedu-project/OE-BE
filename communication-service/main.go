@@ -12,10 +12,12 @@ func init() {
 	// Load config, DB, RabbitMQ trước khi main chạy
 	configs.InitEnv()
 	configs.ConnectDatabase()
+	configs.ConnectRabbitMQ()
 }
 
 func main() {
 	// Start listener nhận message từ RabbitMQ
+	// go handlers.ListenRegisterUserSuccess()
 
 	log.Println("✅ Communication service started...")
 
