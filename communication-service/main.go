@@ -1,17 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"time"
+
+	"communication-service/config"
 )
 
 func main() {
-	fmt.Println("Start")
+	config.LoadConfig()
+	log.Printf("Communication Service started in %s environment on port %s", config.Cfg.AppEnv, config.Cfg.Port)
 
-	log.Println("ok")
-
-	for {
-		time.Sleep(time.Hour)
-	}
+	select {}
 }
