@@ -1,9 +1,8 @@
-package config
+package configs
 
 import (
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -12,33 +11,28 @@ type Config struct {
 	AppEnv      string
 	Port        string
 	SMTPHost    string
-	SMTPPort    int
-	SMPTUser    string
+	SMTPPort    string
+	SMTPUser    string
 	SMTPPass    string
 	RabbitMQURL string
 }
 
-var Cfg *Config
+var Env *Config
 
-func LoadConfig() {
-	// Load .env
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using environment variables")
+func InitEnv() {
+	if err := godotenv.Load(".env"); err != nil {
+		log.Println("No .env file found, using system env")
 	}
 
-	Cfg = &Config{}
-
-	Cfg.AppEnv = os.Getenv("APP_ENV")
-	Cfg.Port = os.Getenv("PORT")
-	Cfg.SMTPHost = os.Getenv("SMTP_HOST")
-	smtpPort, err := strconv.Atoi(os.Getenv("SMTP_PORT"))
-	if err != nil {
-		log.Fatalf("Invalid SMTP_PORT: %v", err)
+	Env = &Config{
+		AppEnv:      os.Getenv("APP_ENV"),
+		Port:        os.Getenv("PORT"),
+		SMTPHost:    os.Getenv("SMTP_HOST"),
+		SMTPPort:    os.Getenv("SMTP_PORT"),
+		SMTPUser:    os.Getenv("SMTP_USER"),
+		SMTPPass:    os.Getenv("SMTP_PASS"),
+		RabbitMQURL: os.Getenv("RABBITMQ_URL"),
 	}
-	Cfg.SMPTUser = os.Getenv("SMTP_USER")
-	Cfg.SMTPPass = os.Getenv("SMTP_PASS")
 
-	Cfg.RabbitMQURL = os.Getenv("RABBITMQ_URL")
-
-	Cfg.SMTPPort = smtpPort
+	log.Printf("✅ Environment loaded: %s", Env.AppEnv)
 }
