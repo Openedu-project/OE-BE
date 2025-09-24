@@ -6,24 +6,28 @@ import (
 	"os/signal"
 
 	"communication-service/configs"
+	handler "communication-service/handlers"
+	"communication-service/services"
 )
 
 func init() {
-	// Load config, DB, RabbitMQ trước khi main chạy
 	configs.InitEnv()
-	configs.ConnectDatabase()
 	configs.ConnectRabbitMQ()
 }
 
 func main() {
-	// Start listener nhận message từ RabbitMQ
-	// go handlers.ListenRegisterUserSuccess()
-
 	log.Println("✅ Communication service started...")
+
+	rabbitService := services.NewRabbitMQService()
+	defer rabbitService.Close()
+
+	rabbitHandler := handler.NewRabbitHandler()
+
+	rabbitService.Consume(rabbitHandler.HandlerMessage)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 
-	log.Println("Shutting down communication service...")
+	log.Println("👋 Shutting down communication service...")
 }

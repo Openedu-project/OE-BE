@@ -11,22 +11,22 @@ import (
 )
 
 type Environment struct {
-	AppEnv           string `env:"APP_ENV,required"`
-	Port             string `env:"PORT,required"`
-	DBHost           string `env:"DB_HOST,required"`
-	DBUser           string `env:"DB_USER,required"`
-	DBPass           string `env:"DB_PASS,required"`
-	DBName           string `env:"DB_NAME,required"`
-	DBPort           string `env:"DB_PORT,required"`
-	JwtSecretAccess  string `env:"JWT_SECRET_ACCESS,required"`
-	JwtSecretRefresh string `env:"JWT_SECRET_REFRESH,required"`
-	JwtExpiredTime   string `env:"JWT_EXPIRED_TIME,required"`
-	AESSecret        string `env:"AES_SECRET,required"`
-	SMTPHost         string
-	SMTPPort         string
-	SMTPUser         string
-	SMTPPass         string
-	RabbitMQURL      string
+	AppEnv string `env:"APP_ENV,required"`
+	Port   string `env:"PORT,required"`
+	DBHost string `env:"DB_HOST,required"`
+	DBUser string `env:"DB_USER,required"`
+	DBPass string `env:"DB_PASS,required"`
+	DBName string `env:"DB_NAME,required"`
+	DBPort string `env:"DB_PORT,required"`
+	// JwtSecretAccess  string `env:"JWT_SECRET_ACCESS,required"`
+	// JwtSecretRefresh string `env:"JWT_SECRET_REFRESH,required"`
+	// JwtExpiredTime   string `env:"JWT_EXPIRED_TIME,required"`
+	// AESSecret        string `env:"AES_SECRET,required"`
+	SMTPHost    string
+	SMTPPort    string
+	SMTPUser    string
+	SMTPPass    string
+	RabbitMQURL string
 }
 
 var Env Environment
@@ -37,6 +37,9 @@ func InitEnv() {
 		printEnvError(err)
 		log.Fatal("❌ Environment validation failed!")
 	}
+
+	Env.AppEnv = os.Getenv("APP_ENV")
+	Env.Port = os.Getenv("PORT")
 	Env.SMTPHost = os.Getenv("SMTP_HOST")
 	Env.SMTPPort = os.Getenv("SMTP_PORT")
 	Env.SMTPUser = os.Getenv("SMTP_USER")

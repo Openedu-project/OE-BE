@@ -3,21 +3,24 @@ package main
 import (
 	"errors"
 	"fmt"
-	routes "gateway/api"
-	"gateway/configs"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+
+	routes "gateway/api"
+	"gateway/configs"
 )
 
 func init() {
 	configs.InitEnv()
+
+	log.Println("Connecting to RabbitMQ at:", configs.Env.RabbitMQURL)
 	configs.ConnectDatabase()
+	configs.ConnectRabbitMQ()
 }
 
 func main() {
-
 	routersInit := routes.InitRouter()
 	port := configs.Env.Port
 
