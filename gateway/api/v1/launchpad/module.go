@@ -1,6 +1,7 @@
 package launchpad
 
 import (
+	"gateway/api/v1/wallets"
 	"gateway/configs"
 	"gateway/models"
 
@@ -20,7 +21,7 @@ func InitModule(r *gin.Engine) {
 	}
 
 	repo := NewLaunchpadRepository(db)
-	scv := NewLaunchpadService(repo)
+	scv := NewLaunchpadService(repo, wallets.WalletRepo)
 	controller := NewLaunchpadController(scv)
 
 	api := r.Group("/api/v1")

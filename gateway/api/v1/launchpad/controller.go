@@ -41,6 +41,13 @@ func (c *LaunchpadController) RegisterRoutes(r *gin.RouterGroup) {
 }
 
 func (c *LaunchpadController) CreateLaunchpad(ctx *gin.Context) {
+	userIdValue, _ := ctx.Get("userId")
+
+	userId, ok := userIdValue.(uint)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid userId type"})
+		return
+	}
 	var dto CreateLaunchpadDTO
 	if err := ctx.ShouldBindJSON(&dto); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -48,7 +55,7 @@ func (c *LaunchpadController) CreateLaunchpad(ctx *gin.Context) {
 		})
 		return
 	}
-	lp, err := c.service.CreateLaunchpad(dto)
+	lp, err := c.service.CreateLaunchpad(dto, userId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
