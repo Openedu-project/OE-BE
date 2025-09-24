@@ -7,9 +7,15 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"strings"
 
 	"github.com/btcsuite/btcd/btcutil/base58"
 	"github.com/cosmos/go-bip39"
+)
+
+const (
+	Ed25519Prefix     = "ed25519:"
+	NearNominationExp = 24
 )
 
 type OpenEduAccount struct {
@@ -87,4 +93,15 @@ func GenerateSeedPhraseAndSecret() (string, string, error) {
 	secret := base64.StdEncoding.EncodeToString(secretBytes)
 
 	return seedPhrase, secret, nil
+}
+
+func Ed25519PrivateKeyFromString(ed25519PrivateKey string) (ed25519.PrivateKey, error) {
+	if !strings.HasPrefix(ed25519PrivateKey, Ed25519Prefix) {
+		return nil, fmt.Errorf("'%s' is not an Ed25519 key", ed25519PrivateKey)
+	}
+	keyBytes := base58.Decode(strings.TrimPrefix(ed25519PrivateKey, Ed25519Prefix))
+	if len(keyBytes) != 64 {
+		return nil, fmt.Errorf("unexpected byte length for private key '%s'", ed25519PrivateKey)
+	}
+	return keyBytes, nil
 }

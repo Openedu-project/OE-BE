@@ -37,3 +37,11 @@ func (r *WalletRepository) FindByEmail(email string) (*models.Wallet, error) {
 	}
 	return &wallet, nil
 }
+
+func (r *WalletRepository) FindByUserId(userId uint) (*models.Wallet, error) {
+	var wallet models.Wallet
+	if err := r.db.Where("user_id = ?", userId).First(&wallet).Error; err != nil {
+		return nil, err
+	}
+	return &wallet, nil
+}
