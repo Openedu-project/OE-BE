@@ -5,6 +5,7 @@ import (
 
 	"gateway/api/v1/auth"
 	"gateway/api/v1/courses"
+	"gateway/api/v1/enrollments"
 	"gateway/api/v1/launchpad"
 	newsfeed "gateway/api/v1/news-feed"
 	"gateway/api/v1/users"
@@ -27,6 +28,7 @@ func InitRouter() *gin.Engine {
 	courses.InitModule(r)
 	launchpad.InitModule(r)
 	newsfeed.InitModule(r)
+	enrollments.InitModule(r)
 
 	return r
 }

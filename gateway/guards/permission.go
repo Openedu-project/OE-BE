@@ -36,6 +36,8 @@ const (
 
 	// System
 	PermSystemConfig Permission = "system.config"
+
+	PermEnrollInCourse Permission = "course.enroll"
 )
 
 var rolePermissions = map[Role][]Permission{
@@ -81,6 +83,7 @@ var rolePermissions = map[Role][]Permission{
 		PermContentView,
 		PermReportView,
 		BlogRead,
+		PermEnrollInCourse,
 	},
 }
 
