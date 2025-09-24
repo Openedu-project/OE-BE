@@ -2,6 +2,7 @@ package routes
 
 import (
 	v1 "gateway/api/v1"
+
 	"gateway/api/v1/auth"
 	"gateway/api/v1/courses"
 	"gateway/api/v1/launchpad"

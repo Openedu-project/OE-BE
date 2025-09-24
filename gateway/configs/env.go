@@ -3,6 +3,7 @@ package configs
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/caarlos0/env/v11"
@@ -21,6 +22,11 @@ type Environment struct {
 	JwtSecretRefresh string `env:"JWT_SECRET_REFRESH,required"`
 	JwtExpiredTime   string `env:"JWT_EXPIRED_TIME,required"`
 	AESSecret        string `env:"AES_SECRET,required"`
+	SMTPHost         string
+	SMTPPort         string
+	SMTPUser         string
+	SMTPPass         string
+	RabbitMQURL      string
 }
 
 var Env Environment
@@ -31,6 +37,11 @@ func InitEnv() {
 		printEnvError(err)
 		log.Fatal("❌ Environment validation failed!")
 	}
+	Env.SMTPHost = os.Getenv("SMTP_HOST")
+	Env.SMTPPort = os.Getenv("SMTP_PORT")
+	Env.SMTPUser = os.Getenv("SMTP_USER")
+	Env.SMTPPass = os.Getenv("SMTP_PASS")
+	Env.RabbitMQURL = os.Getenv("RABBITMQ_URL")
 }
 
 func IsProduction() bool {
@@ -45,5 +56,4 @@ func printEnvError(err error) {
 			fmt.Println(strings.TrimSpace(line))
 		}
 	}
-
 }
