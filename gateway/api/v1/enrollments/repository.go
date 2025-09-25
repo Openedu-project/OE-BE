@@ -37,3 +37,11 @@ func (r *Repository) Create(userCourse *models.UserCourse) error {
 	}
 	return nil
 }
+
+func (r *Repository) FindUserCoursesByUserID(userID uint) ([]models.UserCourse, error) {
+	var userCourse []models.UserCourse
+	if err := r.db.Preload("Course").Preload("Course.Lecturer").Where("user_id = ?", userID).Find(&userCourse).Error; err != nil {
+		return nil, err
+	}
+	return userCourse, nil
+}

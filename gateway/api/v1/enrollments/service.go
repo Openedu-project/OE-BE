@@ -38,3 +38,42 @@ func (s *Service) CreateEnrollment(userId uint, courseId uint) (*models.UserCour
 
 	return newUserCourse, nil
 }
+
+func (s *Service) GetMyCourses(userId uint) (*MyCoureseResponseDTO, error) {
+	userCourses, err := s.repo.FindUserCoursesByUserID(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	response := MyCoureseResponseDTO{
+		InProgressCourses: []CourseInfoDTO{},
+		CompletedCourses:  []CourseInfoDTO{},
+		NotStartedCourses: []CourseInfoDTO{},
+	}
+
+	for _, uc := range userCourses {
+		if uc.Course == nil {
+			continue
+		}
+		lecturerName := ""
+		if uc.Course.Lecturer != nil {
+			lecturerName = uc.Course.Lecturer.Name
+		}
+		courseInfo := CourseInfoDTO{
+			ID:               uc.Course.ID,
+			Name:             uc.Course.Name,
+			ShortDescription: uc.Course.ShortDescription,
+			Banner:           uc.Course.Banner,
+			LecturerName:     lecturerName,
+		}
+
+		switch uc.Status {
+		case models.StatusInProgress:
+			response.InProgressCourses = append(response.InProgressCourses, courseInfo)
+		case models.StatusCompleted:
+			response.CompletedCourses = append(response.CompletedCourses, courseInfo)
+		}
+	}
+
+	return &response, nil
+}

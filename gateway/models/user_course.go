@@ -18,7 +18,7 @@ type UserCourse struct {
 	UserID      uint             `json:"user_id"`
 	User        User             `gorm:"foreignKey:UserID"`
 	CourseID    uint             `json:"course_id"`
-	Course      Course           `gorm:"foreignKey:CourseID"`
+	Course      *Course          `gorm:"foreignKey:CourseID"`
 	Status      UserCourseStatus `gorm:"default:'in_progress"`
 	CompletedAt time.Time
 }

@@ -23,6 +23,7 @@ func (c *EnrollmentController) RegisterRoutes(r *gin.RouterGroup) {
 	enrollRoutesAuth.Use(middlewares.AuthMiddleware())
 	{
 		enrollRoutesAuth.POST("/courses/:id/enroll", middlewares.RequirePermission(guards.PermEnrollInCourse), c.Enroll)
+		enrollRoutesAuth.GET("/my-courses", middlewares.RequirePermission(guards.PermEnrollInCourse), c.GetMyCourses)
 	}
 }
 
@@ -84,4 +85,31 @@ func (c *EnrollmentController) Enroll(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, response)
+}
+
+func (c *EnrollmentController) GetMyCourses(ctx *gin.Context) {
+	userIdValue, exists := ctx.Get("userId")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Unauthorized: userId not found in context",
+		})
+		return
+	}
+	userId, ok := userIdValue.(uint)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Invalid userId type in context",
+		})
+		return
+	}
+
+	courses, err := c.service.GetMyCourses(userId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve courses",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, courses)
 }
