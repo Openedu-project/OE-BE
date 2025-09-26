@@ -3,6 +3,7 @@ package courses
 import (
 	coursesCategory "gateway/api/v1/courses/categories"
 	coursesSection "gateway/api/v1/courses/sections"
+	"gateway/api/v1/enrollments"
 	"gateway/configs"
 	"gateway/models"
 
@@ -22,7 +23,8 @@ func InitModule(r *gin.Engine) {
 	}
 
 	CourseRepo := NewCourseRepository(db)
-	CourseSvc := NewCourseService(CourseRepo)
+	EnrollRepo := enrollments.NewEnrollRepository(db)
+	CourseSvc := NewCourseService(CourseRepo, EnrollRepo)
 	controller := NewCourseController(CourseSvc)
 
 	api := r.Group("/api/v1")

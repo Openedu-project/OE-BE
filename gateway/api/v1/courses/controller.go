@@ -148,7 +148,9 @@ func (c *CourseController) GetCourseByID(ctx *gin.Context) {
 		return
 	}
 
-	course, err := c.service.GetCourseByID(uint(courseId))
+	userId := ctx.MustGet("userId").(uint)
+	role := ctx.GetString("role")
+	course, err := c.service.GetCourseByID(uint(courseId), userId, role)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{

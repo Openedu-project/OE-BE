@@ -8,15 +8,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type Repository struct {
+type EnrollRepository struct {
 	db *gorm.DB
 }
 
-func NewRepository(db *gorm.DB) *Repository {
-	return &Repository{db: db}
+func NewEnrollRepository(db *gorm.DB) *EnrollRepository {
+	return &EnrollRepository{db: db}
 }
 
-func (r *Repository) FindByUserIDAndCourseID(userID uint, courseID uint) (*models.UserCourse, error) {
+func (r *EnrollRepository) FindByUserIDAndCourseID(userID uint, courseID uint) (*models.UserCourse, error) {
 	var userCourse models.UserCourse
 	if err := r.db.Where("user_id = ? AND course_id = ?", userID, courseID).First(&userCourse).Error; err != nil {
 		return nil, err
@@ -24,7 +24,7 @@ func (r *Repository) FindByUserIDAndCourseID(userID uint, courseID uint) (*model
 	return &userCourse, nil
 }
 
-func (r *Repository) Create(userCourse *models.UserCourse) error {
+func (r *EnrollRepository) Create(userCourse *models.UserCourse) error {
 	var course models.Course
 	if err := r.db.First(&course, userCourse.CourseID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -38,7 +38,7 @@ func (r *Repository) Create(userCourse *models.UserCourse) error {
 	return nil
 }
 
-func (r *Repository) FindUserCoursesByUserID(userID uint) ([]models.UserCourse, error) {
+func (r *EnrollRepository) FindUserCoursesByUserID(userID uint) ([]models.UserCourse, error) {
 	var userCourse []models.UserCourse
 	if err := r.db.Preload("Course").Preload("Course.Lecturer").Where("user_id = ?", userID).Find(&userCourse).Error; err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ type StatusCountResult struct {
 	Count  int64
 }
 
-func (r *Repository) CountCoursesByStatus(userID uint) ([]StatusCountResult, error) {
+func (r *EnrollRepository) CountCoursesByStatus(userID uint) ([]StatusCountResult, error) {
 	var results []StatusCountResult
 	err := r.db.Model(&models.UserCourse{}).Select("status, count(*) as count").Where("user_id = ?", userID).Group("status").Scan(&results).Error
 	if err != nil {
@@ -61,7 +61,7 @@ func (r *Repository) CountCoursesByStatus(userID uint) ([]StatusCountResult, err
 	return results, nil
 }
 
-func (r *Repository) FindUserCourseByUserIDAndStatus(userID uint, status models.UserCourseStatus, offset int, limit int) ([]models.UserCourse, error) {
+func (r *EnrollRepository) FindUserCourseByUserIDAndStatus(userID uint, status models.UserCourseStatus, offset int, limit int) ([]models.UserCourse, error) {
 	var userCourses []models.UserCourse
 	err := r.db.Preload("Course").Preload("Course.Lecturer").Where("user_id = ?  AND status = ?", userID, status).Offset(offset).Limit(limit).Find(&userCourses).Error
 	if err != nil {
@@ -71,6 +71,6 @@ func (r *Repository) FindUserCourseByUserIDAndStatus(userID uint, status models.
 	return userCourses, nil
 }
 
-func (r *Repository) Update(userCourse *models.UserCourse) error {
+func (r *EnrollRepository) Update(userCourse *models.UserCourse) error {
 	return r.db.Save(userCourse).Error
 }

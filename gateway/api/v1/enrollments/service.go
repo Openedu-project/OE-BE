@@ -9,15 +9,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type Service struct {
-	repo *Repository
+type EnrollService struct {
+	repo *EnrollRepository
 }
 
-func NewService(repo *Repository) *Service {
-	return &Service{repo: repo}
+func NewEnrollService(repo *EnrollRepository) *EnrollService {
+	return &EnrollService{repo: repo}
 }
 
-func (s *Service) CreateEnrollment(userId uint, courseId uint) (*models.UserCourse, error) {
+func (s *EnrollService) CreateEnrollment(userId uint, courseId uint) (*models.UserCourse, error) {
 	// Check đã có enroll chưa
 	_, err := s.repo.FindByUserIDAndCourseID(userId, courseId)
 	if err == nil {
@@ -40,7 +40,7 @@ func (s *Service) CreateEnrollment(userId uint, courseId uint) (*models.UserCour
 	return newUserCourse, nil
 }
 
-func (s *Service) GetMyCourses(userId uint) (*MyCoureseResponseDTO, error) {
+func (s *EnrollService) GetMyCourses(userId uint) (*MyCoureseResponseDTO, error) {
 	userCourses, err := s.repo.FindUserCoursesByUserID(userId)
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (s *Service) GetMyCourses(userId uint) (*MyCoureseResponseDTO, error) {
 	return &response, nil
 }
 
-func (s *Service) GetDashboardSummary(userId uint) (*DashboardSummaryDTO, error) {
+func (s *EnrollService) GetDashboardSummary(userId uint) (*DashboardSummaryDTO, error) {
 	counts, err := s.repo.CountCoursesByStatus(userId)
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func (s *Service) GetDashboardSummary(userId uint) (*DashboardSummaryDTO, error)
 	return summary, nil
 }
 
-func (s *Service) GetMyCoursesByStatus(userId uint, status models.UserCourseStatus, page int, pageSize int) ([]CourseInfoDTO, error) {
+func (s *EnrollService) GetMyCoursesByStatus(userId uint, status models.UserCourseStatus, page int, pageSize int) ([]CourseInfoDTO, error) {
 	offset := (page - 1) * pageSize
 	limit := pageSize
 
@@ -139,7 +139,7 @@ func (s *Service) GetMyCoursesByStatus(userId uint, status models.UserCourseStat
 	return coursesDTO, nil
 }
 
-func (s *Service) CompletedCourse(userId uint, courseId uint) (*models.UserCourse, error) {
+func (s *EnrollService) CompletedCourse(userId uint, courseId uint) (*models.UserCourse, error) {
 	userCourse, err := s.repo.FindByUserIDAndCourseID(userId, courseId)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

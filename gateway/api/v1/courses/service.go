@@ -5,17 +5,24 @@ import (
 	"errors"
 	"fmt"
 
+	"gateway/api/v1/enrollments"
+	"gateway/guards"
 	"gateway/models"
 
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 type CourseService struct {
-	repo *CourseRepository
+	repo       *CourseRepository
+	enrollRepo *enrollments.EnrollRepository
 }
 
-func NewCourseService(repo *CourseRepository) *CourseService {
-	return &CourseService{repo: repo}
+func NewCourseService(repo *CourseRepository, enrollRepo *enrollments.EnrollRepository) *CourseService {
+	return &CourseService{
+		repo:       repo,
+		enrollRepo: enrollRepo,
+	}
 }
 
 func (s *CourseService) CreateCourse(dto CreateCourseDTO, userId uint) (*models.Course, error) {
@@ -113,10 +120,24 @@ func (s *CourseService) TogglePublishCourse(courseId uint, isPublish bool) (*mod
 	return &course, nil
 }
 
-func (s *CourseService) GetCourseByID(courseId uint) (*models.Course, error) {
+func (s *CourseService) GetCourseByID(courseId uint, userId uint, role string) (*models.Course, error) {
 	course, err := s.repo.FindByID(courseId)
 	if err != nil {
 		return nil, err
 	}
-	return course, nil
+	if role == string(guards.RoleAdmin) || role == string(guards.RoleSysAdmin) || course.LecturerId == userId {
+		return course, nil
+	}
+
+	if role == string(guards.RoleLearner) {
+		_, err := s.enrollRepo.FindByUserIDAndCourseID(userId, courseId)
+		if err == nil {
+			return course, nil
+		}
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("forbidden: you are not enrolled in this course")
+		}
+		return nil, err
+	}
+	return nil, errors.New("forbidden: you do not have permission to view this course")
 }

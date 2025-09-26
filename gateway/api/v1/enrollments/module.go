@@ -9,8 +9,8 @@ import (
 func InitModule(r *gin.Engine) {
 	db := configs.DB
 
-	repo := NewRepository(db)
-	service := NewService(repo)
+	repo := NewEnrollRepository(db)
+	service := NewEnrollService(repo)
 	controller := NewEnrollmentController(service)
 
 	api := r.Group("/api/v1")

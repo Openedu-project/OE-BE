@@ -12,10 +12,10 @@ import (
 )
 
 type EnrollmentController struct {
-	service *Service
+	service *EnrollService
 }
 
-func NewEnrollmentController(service *Service) *EnrollmentController {
+func NewEnrollmentController(service *EnrollService) *EnrollmentController {
 	return &EnrollmentController{service: service}
 }
 
