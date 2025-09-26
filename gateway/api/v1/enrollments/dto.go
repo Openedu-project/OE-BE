@@ -27,3 +27,9 @@ type MyCoureseResponseDTO struct {
 	CompletedCourses  []CourseInfoDTO `json:"completed_courses"`
 	NotStartedCourses []CourseInfoDTO `json:"not_started_courses"`
 }
+
+type DashboardSummaryDTO struct {
+	InProgressCount int64 `json:"in_progress_count"`
+	CompletedCount  int64 `json:"completed_count"`
+	NotStartedCount int64 `json:"not_started_count"`
+}

@@ -77,3 +77,27 @@ func (s *Service) GetMyCourses(userId uint) (*MyCoureseResponseDTO, error) {
 
 	return &response, nil
 }
+
+func (s *Service) GetDashboardSummary(userId uint) (*DashboardSummaryDTO, error) {
+	counts, err := s.repo.CountCoursesByStatus(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	summary := &DashboardSummaryDTO{
+		InProgressCount: 0,
+		CompletedCount:  0,
+		NotStartedCount: 0,
+	}
+
+	for _, result := range counts {
+		switch result.Status {
+		case models.StatusInProgress:
+			summary.InProgressCount = result.Count
+		case models.StatusCompleted:
+			summary.CompletedCount = result.Count
+		}
+	}
+
+	return summary, nil
+}

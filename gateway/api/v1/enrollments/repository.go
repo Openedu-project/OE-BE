@@ -45,3 +45,18 @@ func (r *Repository) FindUserCoursesByUserID(userID uint) ([]models.UserCourse, 
 	}
 	return userCourse, nil
 }
+
+type StatusCountResult struct {
+	Status models.UserCourseStatus
+	Count  int64
+}
+
+func (r *Repository) CountCoursesByStatus(userID uint) ([]StatusCountResult, error) {
+	var results []StatusCountResult
+	err := r.db.Model(&models.UserCourse{}).Select("status, count(*) as count").Where("user_id = ?", userID).Group("status").Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}

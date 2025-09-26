@@ -24,6 +24,7 @@ func (c *EnrollmentController) RegisterRoutes(r *gin.RouterGroup) {
 	{
 		enrollRoutesAuth.POST("/courses/:id/enroll", middlewares.RequirePermission(guards.PermEnrollInCourse), c.Enroll)
 		enrollRoutesAuth.GET("/my-courses", middlewares.RequirePermission(guards.PermEnrollInCourse), c.GetMyCourses)
+		enrollRoutesAuth.GET("/dashboard/learning-summary", middlewares.RequirePermission(guards.PermEnrollInCourse), c.GetDashboardSummary)
 	}
 }
 
@@ -112,4 +113,32 @@ func (c *EnrollmentController) GetMyCourses(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, courses)
+}
+
+func (c *EnrollmentController) GetDashboardSummary(ctx *gin.Context) {
+	userIdValue, exists := ctx.Get("userId")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Unauthorized: usreId not found in context",
+		})
+		return
+	}
+
+	userId, ok := userIdValue.(uint)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Invalid userId tupe in context",
+		})
+		return
+	}
+
+	summary, err := c.service.GetDashboardSummary(userId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retreve dashboard summary",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, summary)
 }
