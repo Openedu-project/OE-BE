@@ -101,3 +101,39 @@ func (s *Service) GetDashboardSummary(userId uint) (*DashboardSummaryDTO, error)
 
 	return summary, nil
 }
+
+func (s *Service) GetMyCoursesByStatus(userId uint, status models.UserCourseStatus, page int, pageSize int) ([]CourseInfoDTO, error) {
+	offset := (page - 1) * pageSize
+	limit := pageSize
+
+	userCourses, err := s.repo.FindUserCourseByUserIDAndStatus(userId, status, offset, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	var coursesDTO []CourseInfoDTO
+	for _, uc := range userCourses {
+		if uc.Course == nil {
+			continue
+		}
+		lecturerName := ""
+
+		if uc.Course.Lecturer != nil {
+			lecturerName = uc.Course.Lecturer.Name
+		}
+		courseInfo := CourseInfoDTO{
+			ID:               uc.Course.ID,
+			Name:             uc.Course.Name,
+			ShortDescription: uc.Course.ShortDescription,
+			Banner:           uc.Course.Banner,
+			LecturerName:     lecturerName,
+		}
+		coursesDTO = append(coursesDTO, courseInfo)
+	}
+
+	if coursesDTO == nil {
+		coursesDTO = []CourseInfoDTO{}
+	}
+
+	return coursesDTO, nil
+}

@@ -60,3 +60,13 @@ func (r *Repository) CountCoursesByStatus(userID uint) ([]StatusCountResult, err
 
 	return results, nil
 }
+
+func (r *Repository) FindUserCourseByUserIDAndStatus(userID uint, status models.UserCourseStatus, offset int, limit int) ([]models.UserCourse, error) {
+	var userCourses []models.UserCourse
+	err := r.db.Preload("Course").Preload("Course.Lecturer").Where("user_id = ?  AND status = ?", userID, status).Offset(offset).Limit(limit).Find(&userCourses).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return userCourses, nil
+}

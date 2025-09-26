@@ -6,6 +6,7 @@ import (
 
 	"gateway/guards"
 	"gateway/middlewares"
+	"gateway/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,6 +26,7 @@ func (c *EnrollmentController) RegisterRoutes(r *gin.RouterGroup) {
 		enrollRoutesAuth.POST("/courses/:id/enroll", middlewares.RequirePermission(guards.PermEnrollInCourse), c.Enroll)
 		enrollRoutesAuth.GET("/my-courses", middlewares.RequirePermission(guards.PermEnrollInCourse), c.GetMyCourses)
 		enrollRoutesAuth.GET("/dashboard/learning-summary", middlewares.RequirePermission(guards.PermEnrollInCourse), c.GetDashboardSummary)
+		enrollRoutesAuth.GET("/my-courses/:status", c.GetMyCoursesByStatus)
 	}
 }
 
@@ -141,4 +143,59 @@ func (c *EnrollmentController) GetDashboardSummary(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, summary)
+}
+
+func (c *EnrollmentController) GetMyCoursesByStatus(ctx *gin.Context) {
+	statusStr := ctx.Param("status")
+
+	userIdValue, exists := ctx.Get("userId")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Unauthorize: userId not found in context",
+		})
+		return
+	}
+
+	userId, ok := userIdValue.(uint)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Invalid userId type in context",
+		})
+		return
+	}
+
+	switch statusStr {
+	case "in-progress":
+		page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+		pageSize, _ := strconv.Atoi(ctx.DefaultQuery("pageSize", "10"))
+		courses, err := c.service.GetMyCoursesByStatus(userId, models.StatusInProgress, page, pageSize)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to retrieve in-progress courses",
+			})
+			return
+		}
+		ctx.JSON(http.StatusOK, courses)
+
+	case "completed":
+		page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+		pageSize, _ := strconv.Atoi(ctx.DefaultQuery("pageSize", "10"))
+		courses, err := c.service.GetMyCoursesByStatus(userId, models.StatusCompleted, page, pageSize)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to retrieve completed courses",
+			})
+			return
+		}
+		ctx.JSON(http.StatusOK, courses)
+
+	case "not-started":
+		ctx.JSON(http.StatusOK, []CourseInfoDTO{})
+
+	default:
+		ctx.JSON(http.StatusBadRequest,
+			gin.H{
+				"error": "Invalid status value. Must be one of: in-progress,completed, not-started",
+			})
+	}
 }
