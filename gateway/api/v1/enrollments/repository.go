@@ -70,3 +70,7 @@ func (r *Repository) FindUserCourseByUserIDAndStatus(userID uint, status models.
 
 	return userCourses, nil
 }
+
+func (r *Repository) Update(userCourse *models.UserCourse) error {
+	return r.db.Save(userCourse).Error
+}

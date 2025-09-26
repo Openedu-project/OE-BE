@@ -2,6 +2,7 @@ package enrollments
 
 import (
 	"errors"
+	"time"
 
 	"gateway/models"
 
@@ -136,4 +137,28 @@ func (s *Service) GetMyCoursesByStatus(userId uint, status models.UserCourseStat
 	}
 
 	return coursesDTO, nil
+}
+
+func (s *Service) CompletedCourse(userId uint, courseId uint) (*models.UserCourse, error) {
+	userCourse, err := s.repo.FindByUserIDAndCourseID(userId, courseId)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("User is not enrolled in this course")
+		}
+		return nil, err
+	}
+
+	if userCourse.Status == models.StatusCompleted {
+		return nil, errors.New("Course is already completed")
+	}
+
+	now := time.Now()
+	userCourse.Status = models.StatusCompleted
+	userCourse.CompletedAt = &now
+
+	if err := s.repo.Update(userCourse); err != nil {
+		return nil, err
+	}
+
+	return userCourse, nil
 }
