@@ -1,15 +1,18 @@
 package courses
 
 import (
+	"errors"
 	"fmt"
-	"gateway/guards"
-	"gateway/middlewares"
-	"gateway/utils"
 	"net/http"
 	"strconv"
 	"time"
 
+	"gateway/guards"
+	"gateway/middlewares"
+	"gateway/utils"
+
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type CourseController struct {
@@ -29,6 +32,7 @@ func (c *CourseController) RegisterRoutes(r *gin.RouterGroup) {
 		courseRoutes.POST("/", middlewares.RequirePermission(guards.PermCourseCRUD), c.CreateCourse)
 		courseRoutes.PUT("/:id", middlewares.RequirePermission(guards.PermCourseCRUD), c.UpdateCourseInfo)
 		courseRoutes.PUT("/:id/publish", middlewares.RequirePermission(guards.PermCourseCRUD), c.PublishCourse)
+		courseRoutes.GET("/:id", c.GetCourseByID)
 	}
 }
 
@@ -99,7 +103,7 @@ func (c *CourseController) UpdateCourseInfo(ctx *gin.Context) {
 		"level":         level,
 	}
 
-	//TODO: update role
+	// TODO: update role
 	updatedCourse, err := c.service.UpdateCourseInfo(uint(courseId), updateData, userId, "admin")
 	if err != nil {
 		ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
@@ -123,7 +127,6 @@ func (c *CourseController) PublishCourse(ctx *gin.Context) {
 	}
 
 	course, err := c.service.TogglePublishCourse(uint(courseId), body.IsPublish)
-
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -133,4 +136,30 @@ func (c *CourseController) PublishCourse(ctx *gin.Context) {
 		"message": "Course status updated successfully",
 		"data":    course,
 	})
+}
+
+func (c *CourseController) GetCourseByID(ctx *gin.Context) {
+	courseIdStr := ctx.Param("id")
+	courseId, err := strconv.ParseUint(courseIdStr, 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid course ID",
+		})
+		return
+	}
+
+	course, err := c.service.GetCourseByID(uint(courseId))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"error": "Course not found",
+			})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to retrive course",
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, course)
 }

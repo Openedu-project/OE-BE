@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"gateway/models"
 
 	"gorm.io/datatypes"
@@ -110,4 +111,12 @@ func (s *CourseService) TogglePublishCourse(courseId uint, isPublish bool) (*mod
 	}
 
 	return &course, nil
+}
+
+func (s *CourseService) GetCourseByID(courseId uint) (*models.Course, error) {
+	course, err := s.repo.FindByID(courseId)
+	if err != nil {
+		return nil, err
+	}
+	return course, nil
 }
