@@ -38,6 +38,8 @@ const (
 	PermSystemConfig Permission = "system.config"
 
 	PermEnrollInCourse Permission = "course.enroll"
+
+	PermViewMyCertificates Permission = "certificate.view.my"
 )
 
 var rolePermissions = map[Role][]Permission{
@@ -84,6 +86,7 @@ var rolePermissions = map[Role][]Permission{
 		PermReportView,
 		BlogRead,
 		PermEnrollInCourse,
+		PermViewMyCertificates,
 	},
 }
 
