@@ -11,6 +11,7 @@ import (
 	newsfeed "gateway/api/v1/news-feed"
 	"gateway/api/v1/users"
 	"gateway/api/v1/wallets"
+	"gateway/api/v1/wishlists"
 	"gateway/middlewares"
 
 	"github.com/gin-gonic/gin"
@@ -31,6 +32,7 @@ func InitRouter() *gin.Engine {
 	newsfeed.InitModule(r)
 	enrollments.InitModule(r)
 	certificates.InitModule(r)
+	wishlists.InitModule(r)
 
 	return r
 }

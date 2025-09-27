@@ -40,6 +40,12 @@ const (
 	PermEnrollInCourse Permission = "course.enroll"
 
 	PermViewMyCertificates Permission = "certificate.view.my"
+
+	PermWishlistAdd Permission = "wishlist.add"
+
+	PermWishlistView Permission = "wishlist.view"
+
+	PermWishlistDelete Permission = "wishlist.delete"
 )
 
 var rolePermissions = map[Role][]Permission{
@@ -87,6 +93,9 @@ var rolePermissions = map[Role][]Permission{
 		BlogRead,
 		PermEnrollInCourse,
 		PermViewMyCertificates,
+		PermWishlistAdd,
+		PermWishlistView,
+		PermWishlistDelete,
 	},
 }
 
