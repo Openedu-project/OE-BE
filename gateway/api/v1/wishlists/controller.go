@@ -2,6 +2,7 @@ package wishlists
 
 import (
 	"net/http"
+	"strconv"
 
 	"gateway/guards"
 	"gateway/middlewares"
@@ -21,9 +22,9 @@ func (c *WishlistController) RegisterRoutes(r *gin.RouterGroup) {
 	wishlistRoutes := r.Group("/wishlist")
 	wishlistRoutes.Use(middlewares.AuthMiddleware())
 	wishlistRoutes.Use(middlewares.UserValidatorMiddleware())
-	wishlistRoutes.Use(middlewares.RequirePermission(guards.PermWishlistAdd))
 	{
-		wishlistRoutes.POST("/", c.AddToWishlist)
+		wishlistRoutes.POST("/", middlewares.RequirePermission(guards.PermWishlistAdd), c.AddToWishlist)
+		wishlistRoutes.GET("/", middlewares.RequirePermission(guards.PermWishlistView), c.GetWishlist)
 	}
 }
 
@@ -57,4 +58,27 @@ func (c *WishlistController) AddToWishlist(ctx *gin.Context) {
 		})
 	}
 	ctx.JSON(http.StatusCreated, wishlistItem)
+}
+
+func (c *WishlistController) GetWishlist(ctx *gin.Context) {
+	userId := ctx.MustGet("userId").(uint)
+
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("pageSize", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 {
+		pageSize = 10
+	}
+	wishlist, err := c.service.GetWishlist(userId, page, pageSize)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to retrieve wishlist",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, wishlist)
 }
