@@ -25,6 +25,8 @@ func (c *WishlistController) RegisterRoutes(r *gin.RouterGroup) {
 	{
 		wishlistRoutes.POST("/", middlewares.RequirePermission(guards.PermWishlistAdd), c.AddToWishlist)
 		wishlistRoutes.GET("/", middlewares.RequirePermission(guards.PermWishlistView), c.GetWishlist)
+		wishlistRoutes.DELETE("/:courseId", middlewares.RequirePermission(guards.PermWishlistDelete), c.RemoveFromWishlist)
+
 	}
 }
 
@@ -81,4 +83,33 @@ func (c *WishlistController) GetWishlist(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, wishlist)
+}
+
+func (c *WishlistController) RemoveFromWishlist(ctx *gin.Context) {
+	userId := ctx.MustGet("userId").(uint)
+	courseIdStr := ctx.Param("courseId")
+
+	courseId, err := strconv.ParseUint(courseIdStr, 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid course ID",
+		})
+		return
+	}
+	err = c.service.RemoveFromWishlist(userId, uint(courseId))
+	if err != nil {
+		if err.Error() == "item not found in wishlist" {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to remove from wishlist",
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Course removed from wishlist successfully",
+	})
 }
